@@ -30,7 +30,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
 
-    await client.connect();
+    // await client.connect();
     const usersCollection = client.db('techDB').collection('users');
     const servicesCollection =client.db('techDB').collection('services')
 
@@ -62,6 +62,7 @@ async function run() {
     const brandDetails = await servicesCollection.findOne(query)
     res.send(brandDetails)
    })
+
    app.post("/brands/:brandName/products", async (req, res) => {
     const brandName = req.params.brandName;
     const product = req.body;
@@ -82,12 +83,39 @@ async function run() {
       res.status(500).send({ message: "Failed to add the product" });
     }
   });
+
+
+
+
+  
+  
+  //   const productName = req.params.name;
+  //   const updatedProductData = req.body;
+
+  //   try {
+  //     // Update the product in the database
+  //     const result = await servicesCollection.updateOne(
+  //       { name: productName },
+  //       { $set: updatedProductData }
+  //     );
+
+  //     if (result.modifiedCount === 1) {
+  //       // Product updated successfully
+  //       const updatedProduct = await servicesCollection.findOne({ name: productName });
+  //       res.json(updatedProduct);
+  //     } else {
+  //       res.status(500).send({ message: 'Failed to update the product' });
+  //     }
+  //   } catch (error) {
+  //     res.status(500).send({ message: 'Failed to update the product' });
+  //   }
+  // });
   
  
 
 
 
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
 
