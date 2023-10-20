@@ -62,8 +62,28 @@ async function run() {
     const brandDetails = await servicesCollection.findOne(query)
     res.send(brandDetails)
    })
-   
-
+   app.post("/brands/:brandName/products", async (req, res) => {
+    const brandName = req.params.brandName;
+    const product = req.body;
+    const query = { name: brandName };
+    const brand = await servicesCollection.findOne(query);
+  
+    if (!brand) {
+      return res.status(404).send({ message: "Brand not found" });
+    }
+    brand.products.push(product);
+    const result = await servicesCollection.updateOne(query, {
+      $set: { products: brand.products },
+    });
+  
+    if (result.modifiedCount === 1) {
+      res.status(200).send({ message: "Product added to the brand" });
+    } else {
+      res.status(500).send({ message: "Failed to add the product" });
+    }
+  });
+  
+ 
 
 
 
