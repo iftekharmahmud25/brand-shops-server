@@ -38,7 +38,10 @@ async function run() {
 
     app.post("/cart/add", async (req, res) => {
       try {
-        const product = req.body; // This should be the product data you want to add to the cart.
+        const product = req.body;
+        // Include the user's email or unique identifier in the product data
+        product.user = req.body.user;
+
         const result = await cartCollection.insertOne(product);
         res.status(201).json({ message: "Product added to the cart" });
       } catch (error) {
@@ -62,10 +65,11 @@ async function run() {
     }); 
 
 
-    // Add this endpoint to your server code
+   
     app.get("/cart", async (req, res) => {
       try {
-        const productsInCart = await cartCollection.find({}).toArray();
+        const user = req.query.user; // Get the user's email or unique identifier from the request
+        const productsInCart = await cartCollection.find({ user }).toArray();
         res.status(200).json(productsInCart);
       } catch (error) {
         console.error("Error fetching products from the cart:", error);
