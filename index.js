@@ -32,9 +32,50 @@ async function run() {
 
     // await client.connect();
     const usersCollection = client.db('techDB').collection('users');
-    const servicesCollection =client.db('techDB').collection('services')
+    const servicesCollection = client.db('techDB').collection('services')
+    const cartCollection = client.db('techDB').collection('cart')
 
-    app.get("/users",  async (req, res) => {
+
+    app.post("/cart/add", async (req, res) => {
+      try {
+        const product = req.body; // This should be the product data you want to add to the cart.
+        const result = await cartCollection.insertOne(product);
+        res.status(201).json({ message: "Product added to the cart" });
+      } catch (error) {
+        console.error("Error adding product to the cart:", error);
+        res.status(500).json({ error: "Failed to add the product to the cart" });
+      }
+    });
+    app.delete('/cart/:productName', async (req, res) => {
+      const productName = req.params.productName;
+      try {
+        const query = { name: productName };
+        const result = await cartCollection.deleteOne(query);
+        if (result.deletedCount === 1) {
+          res.status(200).send({ message: 'Product deleted from cart' });
+        } else {
+          res.status(404).send({ message: 'Product not found in the cart' });
+        }
+      } catch (error) {
+        res.status(500).send({ message: 'Failed to delete the product' });
+      }
+    }); 
+
+
+    // Add this endpoint to your server code
+    app.get("/cart", async (req, res) => {
+      try {
+        const productsInCart = await cartCollection.find({}).toArray();
+        res.status(200).json(productsInCart);
+      } catch (error) {
+        console.error("Error fetching products from the cart:", error);
+        res.status(500).json({ error: "Failed to fetch products from the cart" });
+      }
+    });
+
+
+
+    app.get("/users", async (req, res) => {
       const result = await usersCollection.find().toArray();
       res.send(result);
     });
@@ -51,67 +92,67 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/services", async(req,res)=>{
-      const result =await servicesCollection.find().toArray()
+    app.get("/services", async (req, res) => {
+      const result = await servicesCollection.find().toArray()
       res.send(result)
     })
-    
-   app.get("/services/:id", async(req,res)=>{
-    const id =req.params.id;
-    const query ={_id : new ObjectId(id)}
-    const brandDetails = await servicesCollection.findOne(query)
-    res.send(brandDetails)
-   })
 
-   app.post("/brands/:brandName/products", async (req, res) => {
-    const brandName = req.params.brandName;
-    const product = req.body;
-    const query = { name: brandName };
-    const brand = await servicesCollection.findOne(query);
-  
-    if (!brand) {
-      return res.status(404).send({ message: "Brand not found" });
-    }
-    brand.products.push(product);
-    const result = await servicesCollection.updateOne(query, {
-      $set: { products: brand.products },
+    app.get("/services/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const brandDetails = await servicesCollection.findOne(query)
+      res.send(brandDetails)
+    })
+
+    app.post("/brands/:brandName/products", async (req, res) => {
+      const brandName = req.params.brandName;
+      const product = req.body;
+      const query = { name: brandName };
+      const brand = await servicesCollection.findOne(query);
+
+      if (!brand) {
+        return res.status(404).send({ message: "Brand not found" });
+      }
+      brand.products.push(product);
+      const result = await servicesCollection.updateOne(query, {
+        $set: { products: brand.products },
+      });
+
+      if (result.modifiedCount === 1) {
+        res.status(200).send({ message: "Product added to the brand" });
+      } else {
+        res.status(500).send({ message: "Failed to add the product" });
+      }
     });
-  
-    if (result.modifiedCount === 1) {
-      res.status(200).send({ message: "Product added to the brand" });
-    } else {
-      res.status(500).send({ message: "Failed to add the product" });
-    }
-  });
 
 
 
 
-  
-  
-  //   const productName = req.params.name;
-  //   const updatedProductData = req.body;
 
-  //   try {
-  //     // Update the product in the database
-  //     const result = await servicesCollection.updateOne(
-  //       { name: productName },
-  //       { $set: updatedProductData }
-  //     );
 
-  //     if (result.modifiedCount === 1) {
-  //       // Product updated successfully
-  //       const updatedProduct = await servicesCollection.findOne({ name: productName });
-  //       res.json(updatedProduct);
-  //     } else {
-  //       res.status(500).send({ message: 'Failed to update the product' });
-  //     }
-  //   } catch (error) {
-  //     res.status(500).send({ message: 'Failed to update the product' });
-  //   }
-  // });
-  
- 
+    //   const productName = req.params.name;
+    //   const updatedProductData = req.body;
+
+    //   try {
+    //     // Update the product in the database
+    //     const result = await servicesCollection.updateOne(
+    //       { name: productName },
+    //       { $set: updatedProductData }
+    //     );
+
+    //     if (result.modifiedCount === 1) {
+    //       // Product updated successfully
+    //       const updatedProduct = await servicesCollection.findOne({ name: productName });
+    //       res.json(updatedProduct);
+    //     } else {
+    //       res.status(500).send({ message: 'Failed to update the product' });
+    //     }
+    //   } catch (error) {
+    //     res.status(500).send({ message: 'Failed to update the product' });
+    //   }
+    // });
+
+
 
 
 
